@@ -1,9 +1,8 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi.security.api_key import APIKeyHeader
 import secrets
-import uvicorn
+import os
 
 app = FastAPI()
 
@@ -14,14 +13,19 @@ VALID_USERNAME = "admin"
 VALID_PASSWORD = "password123"
 
 # ----- API KEY SETUP -----
-api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 VALID_API_KEY = "my-secret-api-key"
 
 # Toggle which auth to use
 AUTH_MODE = "basic"  # change to "apikey" when needed
 
+
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
+
+    # Allow health endpoint without auth
+    if request.url.path == "/":
+        return await call_next(request)
+
     try:
         if AUTH_MODE == "basic":
             auth = request.headers.get("Authorization")
@@ -45,8 +49,9 @@ async def auth_middleware(request: Request, call_next):
 
     except Exception:
         return JSONResponse(status_code=401, content={"detail": "Authentication failed"})
-        
- @app.get("/")
+
+
+@app.get("/")
 async def root():
     return {"status": "ok"}
 
@@ -62,9 +67,8 @@ async def mcp_endpoint():
         ]
     }
 
-import os
-import uvicorn
 
 if __name__ == "__main__":
+    import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
