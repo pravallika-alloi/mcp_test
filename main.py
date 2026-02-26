@@ -46,6 +46,11 @@ async def auth_middleware(request: Request, call_next):
     except Exception:
         return JSONResponse(status_code=401, content={"detail": "Authentication failed"})
         
+ @app.get("/")
+async def root():
+    return {"status": "ok"}
+
+
 @app.get("/mcp")
 async def mcp_endpoint():
     return {
