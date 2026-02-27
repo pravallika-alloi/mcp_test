@@ -55,14 +55,51 @@ async def auth_middleware(request: Request, call_next):
 async def root():
     return {"status": "ok"}
 
+@app.post("/mcp")
+async def mcp_endpoint(request: Request):
+    body = await request.json()
 
-@app.get("/mcp")
-async def mcp_endpoint():
-    return {
-        "tools": [
-            {
-                "name": "test_tool",
-                "description": "Test MCP tool"
+    method = body.get("method")
+    request_id = body.get("id")
+
+    if method == "initialize":
+        return {
+            "jsonrpc": "2.0",
+            "id": request_id,
+            "result": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {
+                    "tools": {}
+                },
+                "serverInfo": {
+                    "name": "railway-mcp-test",
+                    "version": "1.0.0"
+                }
             }
-        ]
-    }
+        }
+
+    if method == "tools/list":
+        return {
+            "jsonrpc": "2.0",
+            "id": request_id,
+            "result": {
+                "tools": [
+                    {
+                        "name": "test_tool",
+                        "description": "Test MCP tool"
+                    }
+                ]
+            }
+        }
+
+    return JSONResponse(
+        status_code=400,
+        content={
+            "jsonrpc": "2.0",
+            "id": request_id,
+            "error": {
+                "code": -32601,
+                "message": "Method not found"
+            }
+        }
+    )
