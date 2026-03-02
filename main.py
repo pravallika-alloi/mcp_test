@@ -16,7 +16,7 @@ VALID_PASSWORD = "password123"
 VALID_API_KEY = "my-secret-api-key"
 
 # Toggle which auth to use
-AUTH_MODE = "basic"  # change to "apikey" when needed
+AUTH_MODE = "apikey"  # change to "apikey" when needed
 
 
 @app.middleware("http")
